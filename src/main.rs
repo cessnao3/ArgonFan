@@ -1,4 +1,5 @@
 mod fan_curve;
+mod temp_window;
 
 use std::time::Duration;
 
@@ -6,6 +7,7 @@ use rppal::i2c::I2c;
 use sysinfo::{ComponentExt, RefreshKind, System, SystemExt};
 
 use fan_curve::FanCurve;
+use temp_window::TemperatureWindow;
 
 const BUS_ADDR: u16 = 0x1a;
 
@@ -17,22 +19,27 @@ fn main() {
     let mut i2c = I2c::new().unwrap();
     i2c.set_slave_address(BUS_ADDR).unwrap();
 
+    let mut window = TemperatureWindow::new(0);
     let mut last_speed = fan_curve.get_default_speed();
 
     loop {
         sys.refresh_all();
 
-        let max_temp = sys
+        let immediate_temperature = sys
             .components()
             .iter()
             .map(|c| c.temperature() as i32)
             .max()
             .expect("Unable to get maximum system temperature");
-        let spd = fan_curve.get_speed(max_temp);
+
+        window.update(immediate_temperature);
+        let temperature = window.get_temp();
+
+        let spd = fan_curve.get_speed(temperature);
         i2c.smbus_send_byte(spd).unwrap();
 
         if spd != last_speed {
-            println!("Updating Speed to {spd} @ {max_temp} C");
+            println!("Updating Speed to {spd} @ {temperature} C");
             last_speed = spd;
         }
 
