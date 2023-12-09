@@ -39,8 +39,4 @@ impl FanCurve {
 
         res
     }
-
-    pub fn get_default_speed(&self) -> u8 {
-        self.default_speed
-    }
 }
