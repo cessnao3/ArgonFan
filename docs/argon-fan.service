@@ -1,0 +1,12 @@
+[Unit]
+Description=Argon Case Fan Controller
+After=multi-user.target
+
+[Service]
+Type=simple
+Restart=always
+RestartSec=5
+ExecStart=/usr/local/bin/argon_fan
+
+[Install]
+WantedBy=multi-user.target
