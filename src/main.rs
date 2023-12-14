@@ -10,8 +10,8 @@ use fan_control::FanControl;
 use fan_curve::FanCurve;
 use temp_window::TemperatureWindow;
 
-use std::sync::Arc;
 use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::Arc;
 
 fn main() {
     print!("Fan Controller");
