@@ -2,9 +2,6 @@ mod fan_control;
 mod fan_curve;
 mod temp_window;
 
-#[cfg(feature="mocki2c")]
-mod mock_i2c;
-
 use std::time::Duration;
 
 use sysinfo::{ComponentExt, RefreshKind, System, SystemExt};
