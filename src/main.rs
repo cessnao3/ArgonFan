@@ -14,7 +14,11 @@ use std::sync::Arc;
 use std::sync::atomic::{AtomicBool, Ordering};
 
 fn main() {
-    println!("Fan Controller Starting");
+    print!("Fan Controller");
+    if let Some(vers) = option_env!("CARGO_PKG_VERSION") {
+        print!(" v{vers}")
+    }
+    println!(" Starting");
 
     let mut control = FanControl::new();
     let fan_curve = FanCurve::new(0, &[(55, 10), (60, 55), (65, 100)]).unwrap();
