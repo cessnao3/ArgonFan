@@ -2,16 +2,17 @@ mod fan_control;
 mod fan_curve;
 mod temp_window;
 
-use std::time::Duration;
-
-use sysinfo::{ComponentExt, RefreshKind, System, SystemExt};
+use std::{
+    sync::{
+        atomic::{AtomicBool, Ordering},
+        Arc,
+    },
+    time::Duration
+};
 
 use fan_control::FanControl;
 use fan_curve::FanCurve;
 use temp_window::TemperatureWindow;
-
-use std::sync::atomic::{AtomicBool, Ordering};
-use std::sync::Arc;
 
 fn main() {
     print!("Fan Controller");
@@ -22,8 +23,11 @@ fn main() {
 
     let mut control = FanControl::new();
     let fan_curve = FanCurve::new(0, &[(55, 10), (60, 55), (65, 100)]).unwrap();
-    let mut sys =
-        System::new_with_specifics(RefreshKind::new().with_components().with_components_list());
+    let mut sys = sysinfo::Components::new_with_refreshed_list();
+
+    for c in sys.iter() {
+        println!("Reading temperature from: {}", c.label());
+    }
 
     let mut window = TemperatureWindow::new(0);
 
@@ -32,10 +36,9 @@ fn main() {
     signal_hook::flag::register(signal_hook::consts::SIGINT, term.clone()).unwrap();
 
     while !term.load(Ordering::Relaxed) {
-        sys.refresh_all();
+        sys.refresh();
 
         let immediate_temperature = sys
-            .components()
             .iter()
             .map(|c| c.temperature() as i32)
             .max()
@@ -50,7 +53,7 @@ fn main() {
             println!("Updating Speed to {spd} @ {temperature} C");
         }
 
-        std::thread::sleep(Duration::from_millis(2000));
+        std::thread::sleep(Duration::from_millis(5000));
     }
 
     println!("Fan Controller Exiting");
